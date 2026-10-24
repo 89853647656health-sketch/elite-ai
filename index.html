@@ -65,7 +65,7 @@ body.light .box input{background:#fff}body.light audio{filter:none}body.light .b
 <button class="btn" data-a="audio/female.mp3" data-ru="Женский голос" data-en="Female voice"></button><button class="btn" data-a="audio/male.mp3" data-ru="Мужской голос" data-en="Male voice"></button>
 <audio id="pl" controls preload="none"></audio></section>
 <section class="r"><h3 data-ru="Живой разговор" data-en="Live conversation"></h3><h4 data-ru="Поговорите с ассистентом" data-en="Talk to the assistant"></h4>
-<p class="m" data-ru="Экспериментальная голосовая линия работает на вашем собственном ключе OpenAI. Ключ хранится только в этой вкладке браузера и уходит напрямую в OpenAI, наш сервер его не получает." data-en="An experimental voice line runs on your own OpenAI key. The key stays only in this browser tab and goes directly to OpenAI; our server never receives it."></p>
+<p class="m" data-ru="Нажмите «Позвонить ассистенту», разрешите микрофон и говорите. Ключи и регистрация не нужны." data-en="Press “Call the assistant”, allow the microphone and talk. No keys or sign up needed."></p>
 <button class="btn" id="call2" data-ru="Позвонить ассистенту" data-en="Call the assistant"></button></section>
 <section class="r"><h3 data-ru="Контакты" data-en="Contacts"></h3><h4 data-ru="Компания Elite" data-en="Elite"></h4><p class="m" data-ru="Владелец проекта Арсен Одабашян." data-en="Project owner Arsen Odabashyan."></p><p class="m" data-ru="Представитель Мариус Едлицкий, Elite Icon FZ‑LLC, <a style=&quot;color:var(--g)&quot; href=&quot;https://www.eipinvestment.com&quot;>eipinvestment.com</a>, <a style=&quot;color:var(--g)&quot; href=&quot;tel:+971585397733&quot;>+971 58 539 7733</a>." data-en="Representative Marius Jedlickij, Elite Icon FZ‑LLC, <a style=&quot;color:var(--g)&quot; href=&quot;https://www.eipinvestment.com&quot;>eipinvestment.com</a>, <a style=&quot;color:var(--g)&quot; href=&quot;tel:+971585397733&quot;>+971 58 539 7733</a>."></p></section>
 <footer data-ru="Elite AI · анонс платформы · Арсен Одабашян" data-en="Elite AI · platform announcement · Arsen Odabashyan"></footer>
@@ -73,7 +73,7 @@ body.light .box input{background:#fff}body.light audio{filter:none}body.light .b
 <p class="m" data-ru="Вставьте ключ OpenAI API. Он сохранится только в этой вкладке до её закрытия." data-en="Paste your OpenAI API key. It is kept only in this tab until you close it."></p>
 <input id="key" type="password" placeholder="sk-..." autocomplete="off"><div id="st"></div>
 <button class="btn" id="go" disabled data-ru="Начать разговор" data-en="Start talking"></button><button class="btn" id="end" disabled data-ru="Завершить" data-en="Hang up"></button><button class="btn" id="cl" data-ru="Закрыть" data-en="Close"></button></div></div>
-<script src="voice.js"></script>
+<script>window.ELITE_GATEWAY_URL="https://elite-gateway.onrender.com"</script><script src="voice.js"></script>
 <script>
 let L='ru';const T=()=>{document.querySelectorAll('[data-ru]').forEach(e=>e.innerHTML=e.dataset[L]);lg.textContent=L=='ru'?'EN':'RU';document.documentElement.lang=L};
 lg.onclick=()=>{L=L=='ru'?'en':'ru';T()};T();
