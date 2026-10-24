@@ -29,9 +29,13 @@ audio{width:100%;margin-top:18px;filter:invert(.9) sepia(.4)}
 .modal{position:fixed;inset:0;background:#000c;display:none;place-items:center;z-index:20}.modal.on{display:grid}.box{background:#0d0d10;border:1px solid #3a3226;border-radius:16px;padding:28px;width:min(460px,92vw)}
 .box input{width:100%;background:#000;border:1px solid #333;color:var(--t);padding:10px;border-radius:8px;margin:14px 0}#st{color:var(--g);min-height:1.7em;font-size:14px}
 .ann{display:inline-block;border:1px solid #4a3f28;color:var(--g);font-size:12px;padding:4px 14px;border-radius:14px;margin-bottom:22px;letter-spacing:.15em}
+body.light{--bg:#f6f3ec;--t:#1c1b18;--m:#5f5a50;--g:#9a7430}
+body.light nav{background:rgba(246,243,236,.9)}body.light button{border-color:#c9c0ad}
+body.light .p div,body.light .cards div,body.light .box,body.light .node rect{background:#fff;fill:#fff;border-color:#e2dccd}
+body.light .box input{background:#fff}body.light audio{filter:none}body.light .btn:hover{color:#fff}
 </style></head><body>
 <div class="intro"><div class="ring"></div><h1>ELITE&nbsp;AI</h1></div>
-<nav><b>ELITE AI</b><span><button id="call" class="btn" style="padding:10px 20px;margin:0 8px 0 0;font-weight:600" data-ru="Позвонить ассистенту" data-en="Call the assistant"></button><button id="lg">EN</button></span></nav>
+<nav><b>ELITE AI</b><span><button id="call" class="btn" style="padding:10px 20px;margin:0 8px 0 0;font-weight:600" data-ru="Позвонить ассистенту" data-en="Call the assistant"></button><button id="th" title="Тема">☀</button><button id="lg">EN</button></span></nav>
 <section class="hero"><span class="ann" data-ru="АНОНС ПЛАТФОРМЫ" data-en="PLATFORM ANNOUNCEMENT"></span>
 <h2 data-ru="Личный ИИ ассистент <span>для тех, кто ведёт бизнес</span>" data-en="A personal AI assistant <span>for people who run businesses</span>"></h2>
 <p class="m" data-ru="Elite AI задуман как ассистент, который будет жить на вашем собственном домене, помнить ваши дела и однажды возьмёт на себя переписку, звонки и рутину так, как это делал бы надёжный сотрудник. Сейчас мы рассказываем о платформе, которую строим, и честно показываем, что из неё уже существует в коде." data-en="Elite AI is conceived as an assistant that will live on your own domain, remember your affairs and one day take over correspondence, calls and routine the way a trusted employee would. Here we describe the platform we are building and show honestly what already exists in code."></p></section>
@@ -77,4 +81,4 @@ for(let i=0;i<48;i++){const b=document.createElement('i');b.style.animationDelay
 document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{pl.src=b.dataset.a;pl.play()});
 const o=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('v')),{threshold:.15});document.querySelectorAll('.r').forEach(e=>o.observe(e));
 if(location.search=='?shot')document.querySelectorAll('.r').forEach(e=>e.classList.add('v'));
-</script></body></html>
+</script><script>(function(){var b=document.getElementById('th'),k='elite-theme';function a(l){document.body.classList.toggle('light',l);b.textContent=l?'☾':'☀'}a(localStorage.getItem(k)==='light');b.onclick=function(){var l=!document.body.classList.contains('light');localStorage.setItem(k,l?'light':'dark');a(l)}})();</script></body></html>
