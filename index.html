@@ -1,0 +1,57 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Elite AI</title>
+<style>
+:root{--g:#d4af6a;--bg:#07070a;--t:#e9e6df;--m:#8d8a84}
+*{box-sizing:border-box;margin:0}body{background:var(--bg);color:var(--t);font:17px/1.7 -apple-system,"Segoe UI",Inter,sans-serif;overflow-x:hidden}
+.intro{position:fixed;inset:0;background:#000;display:grid;place-items:center;z-index:9;animation:out 1s 2.6s forwards}
+.intro h1{font-weight:200;letter-spacing:.5em;font-size:clamp(28px,6vw,72px);background:linear-gradient(90deg,#6b5a35,var(--g),#fff4d6,var(--g),#6b5a35);background-size:300%;-webkit-background-clip:text;color:transparent;animation:sh 2.6s ease,in 1.6s ease}
+.ring{position:absolute;width:20px;height:20px;border:1px solid var(--g);border-radius:50%;animation:rg 2.4s ease-out forwards}
+@keyframes in{from{opacity:0;letter-spacing:1.5em;filter:blur(12px)}}@keyframes sh{from{background-position:100%}}
+@keyframes rg{to{width:160vmax;height:160vmax;opacity:0}}@keyframes out{to{opacity:0;visibility:hidden}}
+nav{display:flex;justify-content:space-between;padding:24px 6vw;color:var(--m);font-size:14px;letter-spacing:.2em}
+nav b{color:var(--g);font-weight:400}button{background:none;border:1px solid #333;color:var(--t);padding:6px 14px;border-radius:20px;cursor:pointer}
+section{max-width:900px;margin:0 auto;padding:12vh 6vw}
+.hero{text-align:center;padding-top:16vh}.hero h2{font-size:clamp(36px,6vw,68px);font-weight:300;line-height:1.15}
+.hero h2 span{color:var(--g)}.hero p{color:var(--m);max-width:620px;margin:28px auto 0}
+h3{color:var(--g);font-weight:400;letter-spacing:.25em;font-size:13px;text-transform:uppercase;margin-bottom:18px}
+h4{font-size:30px;font-weight:300;margin-bottom:16px}.m{color:var(--m)}
+.tag{display:inline-block;border:1px solid #4a3f28;color:var(--g);font-size:12px;padding:3px 10px;border-radius:12px;margin-bottom:14px}
+.wave{display:flex;gap:5px;height:70px;align-items:center;margin:30px 0}.wave i{flex:1;background:linear-gradient(var(--g),#5a4a2a);border-radius:3px;animation:w 1.3s ease-in-out infinite}
+@keyframes w{0%,100%{height:12%}50%{height:100%}}
+svg{width:100%;height:auto;margin-top:26px}.fl{stroke-dasharray:6 8;animation:d 1.2s linear infinite}@keyframes d{to{stroke-dashoffset:-28}}
+.node rect{fill:#121216;stroke:#3a3226}.node text{fill:var(--t);font-size:13px;text-anchor:middle}.lake rect{stroke:var(--g)}
+.p{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:26px 0}.p div{border:1px solid #222;border-radius:14px;padding:22px;background:#0d0d10}
+.p b{display:block;font-size:30px;font-weight:300;color:var(--g)}@media(max-width:640px){.p{grid-template-columns:1fr}}
+.r{opacity:0;transform:translateY(40px);transition:1s}.r.v{opacity:1;transform:none}
+footer{text-align:center;color:#555;font-size:13px;padding:60px 6vw}
+</style></head><body>
+<div class="intro"><div class="ring"></div><h1>ELITE&nbsp;AI</h1></div>
+<nav><b>ELITE AI</b><button id="lg">EN</button></nav>
+<section class="hero"><h2 data-ru="Ваш личный интеллект.<br><span>На вашем домене.</span>" data-en="Your personal intelligence.<br><span>On your own domain.</span>"></h2>
+<p data-ru="Elite AI это премиальный персональный ассистент, который работает на собственном домене клиента по лицензии. Он ведёт дела, держит связь с людьми и помогает там, где обычно нужен целый штат." data-en="Elite AI is a premium personal assistant running on the client's own domain under licence. It runs affairs, keeps in touch with people and helps where a whole staff would usually be needed."></p></section>
+<section class="r"><h3 data-ru="Что он умеет" data-en="What it does"></h3><h4 data-ru="Один ассистент, много моделей" data-en="One assistant, many models"></h4>
+<p class="m" data-ru="Ассистент сам выбирает подходящую модель под задачу. Архитектура рассчитана на оркестрацию от пяти до пятидесяти моделей, это целевой масштаб. Собственная CRM ведёт дела, контакты и сделки, а через сопряжённый агент на ноутбуке ассистент работает с файлами строго в пределах выданных разрешений и спрашивает подтверждение перед удалением." data-en="The assistant picks the right model for each task. The architecture is designed to orchestrate five to fifty models, which is the target scale. Its own CRM runs affairs, contacts and deals, and through a paired laptop agent it works with files strictly within granted permissions, asking for confirmation before deleting."></p></section>
+<section class="r"><span class="tag" data-ru="Партнёрский модуль · планируемая интеграция" data-en="Partner module · planned integration"></span><h4 data-ru="Голос, который понимает эмоции" data-en="A voice that understands emotion"></h4>
+<div class="wave" id="wv"></div>
+<p class="m" data-ru="Голосовой модуль команды Якова распознаёт эмоции и контекст разговора. Он создавался три с половиной года совместно с МГУ. Мы планируем встроить его в Elite AI, чтобы ассистент слышал не только слова, но и настроение собеседника." data-en="The voice module from Yakov's team recognises emotion and conversational context. It was developed over three and a half years together with Moscow State University. We plan to integrate it into Elite AI so the assistant hears not only words but the mood behind them."></p></section>
+<section class="r"><span class="tag" data-ru="Целевая архитектура" data-en="Target architecture"></span><h4 data-ru="Данные стекаются в одно озеро" data-en="Data flows into one lake"></h4>
+<p class="m" data-ru="Голос, мессенджер, CRM и агент на ноутбуке передают данные через маршрутизатор моделей в изолированное озеро данных каждого клиента. Так выглядит целевая схема, сейчас она в разработке." data-en="Voice, messenger, CRM and the laptop agent feed through the model router into each client's isolated data lake. This is the target design, currently in development."></p>
+<svg viewBox="0 0 800 300"><g fill="none" stroke="#d4af6a" stroke-width="1.5">
+<path class="fl" d="M140 50 C300 50 300 150 360 150"/><path class="fl" d="M140 120 C300 120 300 150 360 150"/><path class="fl" d="M140 190 C300 190 300 150 360 150"/><path class="fl" d="M140 260 C300 260 300 150 360 150"/><path class="fl" d="M460 150 L590 150"/></g>
+<g class="node"><rect x="20" y="30" width="120" height="40" rx="10"/><text x="80" y="55" data-ru="Голос" data-en="Voice"></text>
+<rect x="20" y="100" width="120" height="40" rx="10"/><text x="80" y="125" data-ru="Мессенджер" data-en="Messenger"></text>
+<rect x="20" y="170" width="120" height="40" rx="10"/><text x="80" y="195">CRM</text>
+<rect x="20" y="240" width="120" height="40" rx="10"/><text x="80" y="265" data-ru="Ноутбук" data-en="Laptop"></text>
+<rect x="360" y="125" width="100" height="50" rx="10"/><text x="410" y="155" data-ru="Роутер" data-en="Router"></text></g>
+<g class="node lake"><rect x="590" y="110" width="190" height="80" rx="40"/><text x="685" y="155" data-ru="Озеро данных" data-en="Data lake"></text></g></svg></section>
+<section class="r"><h3 data-ru="Безопасность и тарифы" data-en="Security and pricing"></h3>
+<p class="m" data-ru="Каждый клиент живёт в изолированном контуре со своими ключами шифрования AES‑256‑GCM, журналом аудита на цепочке SHA‑256 и аварийным выключателем. Внутренний мессенджер построен на Signal Protocol, и сервер видит только шифротекст." data-en="Each client lives in an isolated tenant with its own AES‑256‑GCM keys, a SHA‑256 audit chain and a kill switch. The internal messenger is built on the Signal Protocol, and the server sees only ciphertext."></p>
+<div class="p"><div>Private<b>$300</b><span class="m" data-ru="в месяц" data-en="per month"></span></div><div>Signature<b>$600</b><span class="m" data-ru="в месяц" data-en="per month"></span></div><div>Sovereign<b>$900</b><span class="m" data-ru="в месяц" data-en="per month"></span></div></div>
+<p class="m" data-ru="Можно выкупить систему целиком: первый год обслуживания бесплатно, затем пятьдесят долларов в месяц." data-en="You can also buy the system outright: the first year of service is free, then fifty dollars a month."></p></section>
+<footer>Elite AI · Арсен Одабашян</footer>
+<script>
+let L='ru';const T=()=>{document.querySelectorAll('[data-ru]').forEach(e=>e.innerHTML=e.dataset[L]);lg.textContent=L=='ru'?'EN':'RU';document.documentElement.lang=L};
+lg.onclick=()=>{L=L=='ru'?'en':'ru';T()};T();
+for(let i=0;i<48;i++){const b=document.createElement('i');b.style.animationDelay=(Math.sin(i*.7)*.6+.6).toFixed(2)+'s';wv.appendChild(b)}
+const o=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('v')),{threshold:.15});document.querySelectorAll('.r').forEach(e=>o.observe(e));
+if(location.search=='?shot')document.querySelectorAll('.r').forEach(e=>e.classList.add('v'));
+</script></body></html>
