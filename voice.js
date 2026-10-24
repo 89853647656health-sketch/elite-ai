@@ -10,7 +10,7 @@ const say = t => $("st").textContent = t;
 const open = () => { $("md").classList.add("on"); $("key").value = sessionStorage.getItem("eliteKey") || ""; upd(); };
 const upd = () => { $("go").disabled = !$("key").value.trim().startsWith("sk-"); };
 $("call").onclick = $("call2").onclick = open;
-$("key").oninput = () => { sessionStorage.setItem("eliteKey", $("key").value.trim()); upd(); };
+$("key").oninput = () => { const v = $("key").value.trim(); sessionStorage.setItem("eliteKey", v); upd(); if (v.startsWith("sk-") && v.length > 40 && !pc) $("go").click(); };
 $("cl").onclick = () => { hang(); $("md").classList.remove("on"); };
 $("end").onclick = hang;
 function human(m) {
