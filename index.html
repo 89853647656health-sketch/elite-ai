@@ -73,7 +73,7 @@ body.light .box input{background:#fff}body.light audio{filter:none}body.light .b
 <p class="m" data-ru="Вставьте ключ OpenAI API. Он сохранится только в этой вкладке до её закрытия." data-en="Paste your OpenAI API key. It is kept only in this tab until you close it."></p>
 <input id="key" type="password" placeholder="sk-..." autocomplete="off"><div id="st"></div>
 <button class="btn" id="go" disabled data-ru="Начать разговор" data-en="Start talking"></button><button class="btn" id="end" disabled data-ru="Завершить" data-en="Hang up"></button><button class="btn" id="cl" data-ru="Закрыть" data-en="Close"></button></div></div>
-<script>window.ELITE_GATEWAY_URL="https://elite-gateway.onrender.com"</script><script src="voice.js"></script>
+<script>window.ELITE_GATEWAY_URL="https://elite-gateway.onrender.com"</script><script>fetch(window.ELITE_GATEWAY_URL+"/health").catch(()=>{})/*wake*/</script><script src="voice.js"></script>
 <script>
 let L='ru';const T=()=>{document.querySelectorAll('[data-ru]').forEach(e=>e.innerHTML=e.dataset[L]);lg.textContent=L=='ru'?'EN':'RU';document.documentElement.lang=L};
 lg.onclick=()=>{L=L=='ru'?'en':'ru';T()};T();
