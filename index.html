@@ -7,7 +7,7 @@
 .ring{position:absolute;width:20px;height:20px;border:1px solid var(--g);border-radius:50%;animation:rg 2.4s ease-out forwards}
 @keyframes in{from{opacity:0;letter-spacing:1.5em;filter:blur(12px)}}@keyframes sh{from{background-position:100%}}
 @keyframes rg{to{width:160vmax;height:160vmax;opacity:0}}@keyframes out{to{opacity:0;visibility:hidden}}
-nav{display:flex;justify-content:space-between;padding:24px 6vw;color:var(--m);font-size:14px;letter-spacing:.2em}
+nav{position:sticky;top:0;z-index:50;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:16px 6vw;color:var(--m);font-size:14px;letter-spacing:.2em}
 nav b{color:var(--g);font-weight:400}button{background:none;border:1px solid #333;color:var(--t);padding:6px 14px;border-radius:20px;cursor:pointer}
 section{max-width:900px;margin:0 auto;padding:12vh 6vw}
 .hero{text-align:center;padding-top:16vh}.hero h2{font-size:clamp(36px,6vw,68px);font-weight:300;line-height:1.15}
@@ -31,7 +31,7 @@ audio{width:100%;margin-top:18px;filter:invert(.9) sepia(.4)}
 .ann{display:inline-block;border:1px solid #4a3f28;color:var(--g);font-size:12px;padding:4px 14px;border-radius:14px;margin-bottom:22px;letter-spacing:.15em}
 </style></head><body>
 <div class="intro"><div class="ring"></div><h1>ELITE&nbsp;AI</h1></div>
-<nav><b>ELITE AI</b><span><button id="call" class="btn" style="padding:6px 14px;margin:0 8px 0 0" data-ru="Позвонить ассистенту" data-en="Call the assistant"></button><button id="lg">EN</button></span></nav>
+<nav><b>ELITE AI</b><span><button id="call" class="btn" style="padding:10px 20px;margin:0 8px 0 0;font-weight:600" data-ru="Позвонить ассистенту" data-en="Call the assistant"></button><button id="lg">EN</button></span></nav>
 <section class="hero"><span class="ann" data-ru="АНОНС ПЛАТФОРМЫ" data-en="PLATFORM ANNOUNCEMENT"></span>
 <h2 data-ru="Личный ИИ ассистент <span>для тех, кто ведёт бизнес</span>" data-en="A personal AI assistant <span>for people who run businesses</span>"></h2>
 <p class="m" data-ru="Elite AI задуман как ассистент, который будет жить на вашем собственном домене, помнить ваши дела и однажды возьмёт на себя переписку, звонки и рутину так, как это делал бы надёжный сотрудник. Сейчас мы рассказываем о платформе, которую строим, и честно показываем, что из неё уже существует в коде." data-en="Elite AI is conceived as an assistant that will live on your own domain, remember your affairs and one day take over correspondence, calls and routine the way a trusted employee would. Here we describe the platform we are building and show honestly what already exists in code."></p></section>
