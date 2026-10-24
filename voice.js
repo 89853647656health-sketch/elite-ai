@@ -11,6 +11,7 @@ const open = () => { $("md").classList.add("on"); if (ELITE_GATEWAY_URL) { $("ke
 const upd = () => { $("go").disabled = ELITE_GATEWAY_URL ? !!pc : !$("key").value.trim().startsWith("sk-"); };
 $("call").onclick = $("call2").onclick = open;
 $("key").oninput = () => { const v = $("key").value.trim(); sessionStorage.setItem("eliteKey", v); upd(); if (v.startsWith("sk-") && v.length > 40 && !pc) $("go").click(); };
+$("off").onclick = () => { hang(); $("md").classList.remove("on"); say(""); };
 $("cl").onclick = () => { hang(); $("md").classList.remove("on"); };
 $("end").onclick = hang;
 function human(m) {
