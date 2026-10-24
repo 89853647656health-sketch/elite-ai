@@ -13,6 +13,16 @@ $("call").onclick = $("call2").onclick = open;
 $("key").oninput = () => { sessionStorage.setItem("eliteKey", $("key").value.trim()); upd(); };
 $("cl").onclick = () => { hang(); $("md").classList.remove("on"); };
 $("end").onclick = hang;
+function human(m) {
+  const t = (m || "").toLowerCase();
+  if (t.includes("quota") || t.includes("billing") || t.includes("insufficient") || t.includes("429")) return "OpenAI отклонил запрос: на балансе аккаунта нет средств. Пополните баланс на platform.openai.com/settings/organization/billing.";
+  if (t.includes("incorrect api key") || t.includes("invalid") || t.includes("401")) return "OpenAI не принял ключ: он неверный или отозван. Создайте новый на platform.openai.com/api-keys.";
+  if (t.includes("device not found") || t.includes("notfound")) return "Не найден микрофон. Откройте сайт на устройстве с микрофоном.";
+  if (t.includes("permission") || t.includes("notallowed") || t.includes("denied")) return "Нет доступа к микрофону. Разрешите его в настройках браузера и попробуйте снова.";
+  if (t.includes("model") || t.includes("404")) return "У ключа нет доступа к голосовой модели gpt-realtime. Подробности: " + m;
+  if (t.includes("failed to fetch") || t.includes("network")) return "Нет связи с OpenAI. Проверьте интернет или VPN.";
+  return "Голосовая линия недоступна: " + m;
+}
 function hang() { mic?.getTracks().forEach(t => t.stop()); dc?.close(); pc?.close(); pc = null; $("end").disabled = true; upd(); }
 async function token(key) {
   const session = { type: "realtime", model: MODEL, instructions: PROMPT, audio: { output: { voice: VOICE } } };
@@ -42,5 +52,5 @@ $("go").onclick = async () => {
     if (!r.ok) throw new Error("SDP " + r.status + " " + (await r.text()).slice(0, 160));
     await pc.setRemoteDescription({ type: "answer", sdp: await r.text() });
     $("end").disabled = false;
-  } catch (e) { say("Голосовой контур недоступен: " + e.message); hang(); }
+  } catch (e) { say(human(e.message)); hang(); }
 };
