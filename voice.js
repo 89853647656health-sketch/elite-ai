@@ -4,8 +4,8 @@ const $ = id => document.getElementById(id);
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const LG = () => document.documentElement.lang === "en" ? "en" : "ru";
 const TX = {
-  ru: { wake: "Подключаюсь…", think: "Думаю…", speak: "Говорит ассистент…", listen: "Слушаю, говорите.", type: "Ваш браузер не распознаёт речь. Напишите вопрос, ответ прозвучит голосом.", end: "Разговор завершён.", limit: "Разговор длился 10 минут и завершён.", err: "Ошибка связи: ", mic: "Нет доступа к микрофону. Разрешите его в настройках браузера.", you: "Вы", ai: "Elite AI", ph: "Ваш вопрос…", send: "Отправить" },
-  en: { wake: "Connecting…", think: "Thinking…", speak: "Assistant speaking…", listen: "Listening, go ahead.", type: "Your browser cannot recognise speech. Type a question, the answer will be spoken.", end: "Call ended.", limit: "The call reached 10 minutes and has ended.", err: "Connection error: ", mic: "No microphone access. Allow it in browser settings.", you: "You", ai: "Elite AI", ph: "Your question…", send: "Send" }
+  ru: { wake: "Подключаюсь…", think: "Думаю…", speak: "Говорит ассистент…", listen: "Слушаю, говорите.", type: "Ваш браузер не распознаёт речь. Напишите вопрос, ответ прозвучит голосом.", end: "Разговор завершён.", limit: "Разговор длился 10 минут и завершён.", err: "Ошибка связи: ", mic: "Нет доступа к микрофону. Разрешите его в настройках браузера.", you: "Вы", ai: "Elite AI", lim: "Лимит демо исчерпан: с одного устройства доступно 3 голосовых разговора в сутки. Задайте вопрос в текстовом чате на странице или свяжитесь с командой Elite.", left: "До конца разговора", bye: "Время демо разговора подошло к концу. Спасибо, что поговорили со мной! Если остались вопросы, задайте их в чате на сайте или свяжитесь с командой Elite.", ph: "Ваш вопрос…", send: "Отправить" },
+  en: { wake: "Connecting…", think: "Thinking…", speak: "Assistant speaking…", listen: "Listening, go ahead.", type: "Your browser cannot recognise speech. Type a question, the answer will be spoken.", end: "Call ended.", limit: "The call reached 10 minutes and has ended.", err: "Connection error: ", mic: "No microphone access. Allow it in browser settings.", you: "You", ai: "Elite AI", lim: "Demo limit reached: 3 voice conversations per device per day. Ask your question in the text chat on this page or contact the Elite team.", left: "Time left", bye: "Our demo conversation time is up. Thank you for talking with me! If you have more questions, ask them in the chat on the site or contact the Elite team.", ph: "Your question…", send: "Send" }
 };
 const GREET = {
   ru: "Здравствуйте, я Elite AI, персональный интеллектуальный ассистент премиум класса. Платформу создаёт компания Elite, её основатели Мариус и Арсен, юридическое лицо находится в Эмиратах. Сейчас вы говорите с демо версией, запуск запланирован на ноябрь. Что вам интересно узнать?",
@@ -106,9 +106,27 @@ window.eliteLang = () => { grokLang(); if ($("q")) { $("q").placeholder = t("ph"
 
 // ===== Grok Voice (xAI realtime, speech to speech). Falls back to legacyStart() if it cannot connect. =====
 let gws = null, gctx = null, gmic = null, gproc = null, gsrc = null, gNext = 0, gSources = [], gInstr = null, gVoice = { ru: "celeste", en: "eve" }, gOn = false, gTimer = null;
-const G_RATE = 24000;
+const G_RATE = 24000, G_MAX = 300, G_PER_DAY = 3;
+let gCd = null, gEnd = 0;
+const cd = document.createElement("div"); cd.id = "cd"; cd.style.cssText = "font:700 22px Manrope,sans-serif;margin:6px 0;color:var(--acc,#1d5bff)"; $("st").before(cd);
+const callsLog = () => { try { return JSON.parse(localStorage.getItem("elite-calls") || "[]").filter(x => Date.now() - x < 864e5); } catch { return []; } };
+const limitHit = () => { stopCd(); grokStop(); active = false; $("end").disabled = true; say(t("lim")); };
+function stopCd() { clearInterval(gCd); gCd = null; cd.textContent = ""; }
+function startCd() {
+  gEnd = Date.now() + G_MAX * 1000; stopCd();
+  const tick = () => { const r = Math.max(0, Math.round((gEnd - Date.now()) / 1000)); cd.textContent = t("left") + " " + Math.floor(r / 60) + ":" + String(r % 60).padStart(2, "0");
+    if (r <= 0) { stopCd(); closeCall(); } };
+  tick(); gCd = setInterval(tick, 1000);
+}
+function closeCall() {
+  if (!gws || gws.readyState !== 1) { hang(); return; }
+  try { gproc && gproc.disconnect(); } catch {} // stop sending mic
+  gws.send(JSON.stringify({ type: "conversation.item.create", item: { type: "force_message", role: "assistant", interruptible: false, content: [{ type: "output_text", text: t("bye") }] } }));
+  gws.addEventListener("message", ev => { try { if (JSON.parse(ev.data).type === "response.done") { const w = Math.max(0, (gNext - (gctx ? gctx.currentTime : 0)) * 1000) + 400; setTimeout(hang, w); } } catch {} });
+  setTimeout(hang, 20000);
+}
 function grokStop() {
-  gOn = false; clearTimeout(gTimer);
+  gOn = false; clearTimeout(gTimer); stopCd && gCd && stopCd();
   try { gws && gws.close(); } catch {} gws = null;
   gSources.forEach(s => { try { s.stop(); } catch {} }); gSources = []; gNext = 0;
   try { gproc && gproc.disconnect(); gsrc && gsrc.disconnect(); } catch {}
@@ -138,6 +156,7 @@ function grokLang() { if (gws && gws.readyState === 1 && gInstr) gws.send(JSON.s
 async function grokStart() {
   $("md").classList.add("on"); $("q").placeholder = t("ph"); $("qs").textContent = t("send");
   if (active || gOn) return;
+  if (callsLog().length >= G_PER_DAY) { say(t("lim")); return; }
   // unlock audio inside the click (iOS)
   const AC = window.AudioContext || window.webkitAudioContext;
   try { gctx = new AC(); gctx.resume(); const sb = gctx.createBuffer(1, 1, 22050), s0 = gctx.createBufferSource(); s0.buffer = sb; s0.connect(gctx.destination); s0.start(0); } catch { gctx = null; }
@@ -147,10 +166,11 @@ async function grokStart() {
   try {
     if (!gctx || !window.WebSocket) throw new Error("no audio");
     const [tok, mic] = await Promise.all([
-      fetch(GW + "/grok-session?lang=" + l, { method: "POST" }).then(async r => { const j = await r.json().catch(() => ({})); if (!r.ok || !j.value) throw new Error(j.error?.message || "HTTP " + r.status); return j; }),
+      fetch(GW + "/grok-session?lang=" + l, { method: "POST" }).then(async r => { const j = await r.json().catch(() => ({})); if (r.status === 429) { const e = new Error("demo_limit"); e.limit = true; throw e; } if (!r.ok || !j.value) throw new Error(j.error?.message || "HTTP " + r.status); return j; }),
       navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
     ]);
     if (!gOn) { mic.getTracks().forEach(x => x.stop()); return; }
+    localStorage.setItem("elite-calls", JSON.stringify(callsLog().concat(Date.now())));
     gmic = mic; gInstr = tok.instructions; if (tok.voice && typeof tok.voice === "object") gVoice = tok.voice;
     gws = new WebSocket("wss://api.x.ai/v1/realtime?model=" + (tok.model || "grok-voice-latest"), ["xai-client-secret." + tok.value]);
     let opened = false;
@@ -163,7 +183,7 @@ async function grokStart() {
       const mute = gctx.createGain(); mute.gain.value = 0;
       gproc.onaudioprocess = e => { if (gws && gws.readyState === 1) gws.send(JSON.stringify({ type: "input_audio_buffer.append", audio: b64(toPcm16(e.inputBuffer.getChannelData(0), gctx.sampleRate)) })); };
       gsrc.connect(gproc); gproc.connect(mute); mute.connect(gctx.destination);
-      gTimer = setTimeout(() => { hang(); say(t("limit")); }, 10 * 60e3);
+      startCd();
     };
     gws.onmessage = ev => {
       let e; try { e = JSON.parse(ev.data); } catch { return; }
@@ -181,6 +201,7 @@ async function grokStart() {
     };
   } catch (e) {
     console.warn("grok fallback", e);
+    if (e && e.limit) { limitHit(); return; }
     if (/notallowed|permission|denied/i.test(String(e && (e.name + e.message)))) { grokStop(); hang(); say(t("mic")); return; }
     grokStop(); active = false; legacyStart();
   }
