@@ -89,7 +89,7 @@ function listen() {
   try { rec.start(); say(t("listen")); } catch {}
 }
 form.onsubmit = e => { e.preventDefault(); const q = $("q").value.trim(); if (!q) return; $("q").value = ""; stopRec(); ask(q); };
-function start() {
+function legacyStart() {
   $("md").classList.add("on"); $("q").placeholder = t("ph"); $("qs").textContent = t("send");
   if (active) return; active = true; hist = []; log.innerHTML = ""; $("end").disabled = false; say(t("wake"));
   player.src = SILENT; player.play().catch(() => {}); speechSynthesis.speak(new SpeechSynthesisUtterance("")); // unlock audio on user gesture (iOS)
@@ -97,9 +97,91 @@ function start() {
   greet();
 }
 async function greet() { const g = GREET[LG()]; hist.push({ role: "assistant", content: g }); line("ai", g); await speak(g); listen(); }
-function hang() { active = false; busy = false; speaking = false; clearTimeout(timer); stopRec(); stopAudio(); $("end").disabled = true; say(t("end")); }
-$("call").onclick = $("call2").onclick = start;
+function hang() { grokStop(); active = false; busy = false; speaking = false; clearTimeout(timer); stopRec(); stopAudio(); $("end").disabled = true; say(t("end")); }
+$("call").onclick = $("call2").onclick = grokStart;
 $("off").onclick = () => { hang(); $("md").classList.remove("on"); };
 $("cl").onclick = () => { hang(); $("md").classList.remove("on"); };
 $("end").onclick = hang;
-window.eliteLang = () => { if ($("q")) { $("q").placeholder = t("ph"); $("qs").textContent = t("send"); } if (rec) { stopRec(); listen(); } };
+window.eliteLang = () => { grokLang(); if ($("q")) { $("q").placeholder = t("ph"); $("qs").textContent = t("send"); } if (rec) { stopRec(); listen(); } };
+
+// ===== Grok Voice (xAI realtime, speech to speech). Falls back to legacyStart() if it cannot connect. =====
+let gws = null, gctx = null, gmic = null, gproc = null, gsrc = null, gNext = 0, gSources = [], gInstr = null, gVoice = { ru: "celeste", en: "eve" }, gOn = false, gTimer = null;
+const G_RATE = 24000;
+function grokStop() {
+  gOn = false; clearTimeout(gTimer);
+  try { gws && gws.close(); } catch {} gws = null;
+  gSources.forEach(s => { try { s.stop(); } catch {} }); gSources = []; gNext = 0;
+  try { gproc && gproc.disconnect(); gsrc && gsrc.disconnect(); } catch {}
+  gmic && gmic.getTracks().forEach(t => t.stop()); gmic = null;
+  if (gctx) { gctx.close().catch(() => {}); gctx = null; }
+}
+const b64 = buf => { let s = "", b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+function toPcm16(f32, inRate) {
+  const ratio = inRate / G_RATE, n = Math.floor(f32.length / ratio), o = new Int16Array(n);
+  for (let i = 0; i < n; i++) { const x = Math.max(-1, Math.min(1, f32[Math.floor(i * ratio)])); o[i] = x < 0 ? x * 0x8000 : x * 0x7fff; }
+  return o.buffer;
+}
+function playPcm(b64s) {
+  if (!gctx) return;
+  const bin = atob(b64s), n = bin.length >> 1, buf = gctx.createBuffer(1, n, G_RATE), ch = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) { let v = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8); if (v >= 0x8000) v -= 0x10000; ch[i] = v / 32768; }
+  const src = gctx.createBufferSource(); src.buffer = buf; src.connect(gctx.destination);
+  const t0 = Math.max(gctx.currentTime + 0.03, gNext); src.start(t0); gNext = t0 + buf.duration;
+  gSources.push(src); src.onended = () => { gSources = gSources.filter(x => x !== src); if (!gSources.length && gOn) say(t("listen")); };
+}
+function bargeIn() { gSources.forEach(s => { try { s.stop(); } catch {} }); gSources = []; gNext = 0; }
+function gcfg(l) {
+  return { type: "session.update", session: { voice: gVoice[l], instructions: gInstr[l], turn_detection: { type: "server_vad" },
+    audio: { input: { format: { type: "audio/pcm", rate: G_RATE }, transcription: { language_hint: l } }, output: { format: { type: "audio/pcm", rate: G_RATE } } } } };
+}
+function grokLang() { if (gws && gws.readyState === 1 && gInstr) gws.send(JSON.stringify(gcfg(LG()))); }
+async function grokStart() {
+  $("md").classList.add("on"); $("q").placeholder = t("ph"); $("qs").textContent = t("send");
+  if (active || gOn) return;
+  // unlock audio inside the click (iOS)
+  const AC = window.AudioContext || window.webkitAudioContext;
+  try { gctx = new AC(); gctx.resume(); const sb = gctx.createBuffer(1, 1, 22050), s0 = gctx.createBufferSource(); s0.buffer = sb; s0.connect(gctx.destination); s0.start(0); } catch { gctx = null; }
+  player.src = SILENT; player.play().catch(() => {});
+  active = true; gOn = true; hist = []; log.innerHTML = ""; $("end").disabled = false; form.style.display = "none"; say(t("wake"));
+  const l = LG();
+  try {
+    if (!gctx || !window.WebSocket) throw new Error("no audio");
+    const [tok, mic] = await Promise.all([
+      fetch(GW + "/grok-session?lang=" + l, { method: "POST" }).then(async r => { const j = await r.json().catch(() => ({})); if (!r.ok || !j.value) throw new Error(j.error?.message || "HTTP " + r.status); return j; }),
+      navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+    ]);
+    if (!gOn) { mic.getTracks().forEach(x => x.stop()); return; }
+    gmic = mic; gInstr = tok.instructions; if (tok.voice && typeof tok.voice === "object") gVoice = tok.voice;
+    gws = new WebSocket("wss://api.x.ai/v1/realtime?model=" + (tok.model || "grok-voice-latest"), ["xai-client-secret." + tok.value]);
+    let opened = false;
+    const failT = setTimeout(() => { if (!opened) gws && gws.close(); }, 8000);
+    gws.onopen = () => {
+      opened = true; clearTimeout(failT); const L = LG();
+      gws.send(JSON.stringify(gcfg(L)));
+      gws.send(JSON.stringify({ type: "conversation.item.create", item: { type: "force_message", role: "assistant", interruptible: true, content: [{ type: "output_text", text: GREET[L] }] } }));
+      gsrc = gctx.createMediaStreamSource(gmic); gproc = gctx.createScriptProcessor(2048, 1, 1);
+      const mute = gctx.createGain(); mute.gain.value = 0;
+      gproc.onaudioprocess = e => { if (gws && gws.readyState === 1) gws.send(JSON.stringify({ type: "input_audio_buffer.append", audio: b64(toPcm16(e.inputBuffer.getChannelData(0), gctx.sampleRate)) })); };
+      gsrc.connect(gproc); gproc.connect(mute); mute.connect(gctx.destination);
+      gTimer = setTimeout(() => { hang(); say(t("limit")); }, 10 * 60e3);
+    };
+    gws.onmessage = ev => {
+      let e; try { e = JSON.parse(ev.data); } catch { return; }
+      if (e.type === "response.output_audio.delta" || e.type === "response.audio.delta") { playPcm(e.delta); say(t("speak")); }
+      else if (e.type === "input_audio_buffer.speech_started") { bargeIn(); say(t("listen")); }
+      else if (e.type === "input_audio_buffer.speech_stopped") say(t("think"));
+      else if (e.type === "response.output_audio_transcript.done" && e.transcript) line("ai", e.transcript);
+      else if (e.type === "conversation.item.input_audio_transcription.completed" && e.transcript) line("you", e.transcript);
+      else if (e.type === "error") console.warn("grok", e);
+    };
+    gws.onclose = () => {
+      clearTimeout(failT);
+      if (!opened && gOn) { grokStop(); active = false; legacyStart(); return; } // fallback
+      if (gOn) { hang(); }
+    };
+  } catch (e) {
+    console.warn("grok fallback", e);
+    if (/notallowed|permission|denied/i.test(String(e && (e.name + e.message)))) { grokStop(); hang(); say(t("mic")); return; }
+    grokStop(); active = false; legacyStart();
+  }
+}
