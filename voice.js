@@ -29,15 +29,42 @@ function pickVoice(l) {
   return vs.find(v => /natural|online/i.test(v.name) && fem.test(v.name)) || vs.find(v => fem.test(v.name)) || vs[0];
 }
 speechSynthesis.onvoiceschanged = () => {};
-function speak(text) {
+const player = new Audio(); player.preload = "auto";
+const SILENT = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//WreyTRUoAWgBgkOAGbZHBgG1OF6zM82DWbZaUmMBptgQhGjsyYqc9ae9XFz280948NMBWInljyzsNRFLPWdnZGWrddDsjK1unuSrVN9jJsK8KuQtQCtMBjCEtImISdNKJOopIpBFpNSMbIHCSRpRR5iakjTiyzLhchUUBwCgyKiweBv/7UsQbg8isVNoMPMjAAAA0gAAABEVFGmgqK////9bP/6XCykxBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq";
+let speakGen = 0;
+const splitS = s => (s.match(/[^.!?…]+[.!?…]+["»”)]*\s*|[^.!?…]+$/g) || [s]).map(x => x.trim()).filter(Boolean).reduce((a, x) => { if (a.length && a[a.length - 1].length < 40) a[a.length - 1] += " " + x; else a.push(x); return a; }, []);
+const fetchTTS = (text, l) => fetch(GW + "/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, lang: l }) })
+  .then(r => { if (!r.ok || !(r.headers.get("content-type") || "").includes("audio")) throw new Error("tts " + r.status); return r.blob(); });
+const playBlob = (b, gen) => new Promise((res, rej) => {
+  if (gen !== speakGen) return res();
+  const u = URL.createObjectURL(b); player.src = u;
+  player.onended = () => { URL.revokeObjectURL(u); res(); }; player.onerror = () => { URL.revokeObjectURL(u); rej(new Error("play")); };
+  player.play().catch(rej);
+});
+function browserSpeak(text, l) {
   return new Promise(res => {
-    if (!active) return res();
-    const u = new SpeechSynthesisUtterance(text), l = LG();
-    u.lang = l === "en" ? "en-US" : "ru-RU"; const v = pickVoice(l); if (v) u.voice = v; u.rate = 1.02;
-    u.onend = u.onerror = () => { speaking = false; res(); };
-    speaking = true; stopRec(); say(t("speak")); speechSynthesis.cancel(); speechSynthesis.speak(u);
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = l === "en" ? "en-US" : "ru-RU"; const v = pickVoice(l); if (v) u.voice = v;
+    u.onend = u.onerror = () => res(); speechSynthesis.cancel(); speechSynthesis.speak(u);
   });
 }
+async function speak(text) {
+  if (!active) return;
+  const gen = ++speakGen, l = LG(), parts = splitS(text);
+  speaking = true; stopRec(); say(t("speak"));
+  try {
+    let next = fetchTTS(parts[0], l);
+    for (let k = 0; k < parts.length; k++) {
+      const b = await next; if (gen !== speakGen || !active) break;
+      if (k + 1 < parts.length) next = fetchTTS(parts[k + 1], l); next.catch(() => {});
+      await playBlob(b, gen);
+    }
+  } catch (e) {
+    if (gen === speakGen && active) await browserSpeak(text, l);
+  }
+  if (gen === speakGen) speaking = false;
+}
+function stopAudio() { speakGen++; player.pause(); player.removeAttribute("src"); speechSynthesis.cancel(); }
 async function ask(q) {
   if (!active || busy) return; busy = true;
   if (q) { hist.push({ role: "user", content: q }); line("you", q); }
@@ -65,12 +92,12 @@ form.onsubmit = e => { e.preventDefault(); const q = $("q").value.trim(); if (!q
 function start() {
   $("md").classList.add("on"); $("q").placeholder = t("ph"); $("qs").textContent = t("send");
   if (active) return; active = true; hist = []; log.innerHTML = ""; $("end").disabled = false; say(t("wake"));
-  speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance("")); // unlock audio on user gesture
+  player.src = SILENT; player.play().catch(() => {}); // unlock audio on user gesture (iOS)
   timer = setTimeout(() => { hang(); say(t("limit")); }, 10 * 60e3);
   greet();
 }
 async function greet() { const g = GREET[LG()]; hist.push({ role: "assistant", content: g }); line("ai", g); await speak(g); listen(); }
-function hang() { active = false; busy = false; speaking = false; clearTimeout(timer); stopRec(); speechSynthesis.cancel(); $("end").disabled = true; say(t("end")); }
+function hang() { active = false; busy = false; speaking = false; clearTimeout(timer); stopRec(); stopAudio(); $("end").disabled = true; say(t("end")); }
 $("call").onclick = $("call2").onclick = start;
 $("off").onclick = () => { hang(); $("md").classList.remove("on"); };
 $("cl").onclick = () => { hang(); $("md").classList.remove("on"); };
