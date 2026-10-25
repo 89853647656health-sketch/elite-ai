@@ -1,15 +1,15 @@
-// Elite AI voice demo: browser speech recognition (free) -> DeepSeek via gateway /chat -> browser speechSynthesis (free).
+// ARS-ELITE voice demo: browser speech recognition (free) -> DeepSeek via gateway /chat -> browser speechSynthesis (free).
 const GW = window.ELITE_GATEWAY_URL || "https://elite-gateway.onrender.com";
 const $ = id => document.getElementById(id);
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const LG = () => document.documentElement.lang === "en" ? "en" : "ru";
 const TX = {
-  ru: { wake: "Подключаюсь…", think: "Думаю…", speak: "Говорит ассистент…", listen: "Слушаю, говорите.", type: "Ваш браузер не распознаёт речь. Напишите вопрос, ответ прозвучит голосом.", end: "Разговор завершён.", limit: "Разговор длился 10 минут и завершён.", err: "Ошибка связи: ", mic: "Нет доступа к микрофону. Разрешите его в настройках браузера.", you: "Вы", ai: "Elite AI", lim: "Лимит демо исчерпан: с одного устройства доступно 3 голосовых разговора в сутки. Задайте вопрос в текстовом чате на странице или свяжитесь с командой в разделе «Контакты команды».", left: "До конца разговора", bye: "Время демо разговора подошло к концу. Спасибо, что поговорили со мной! Если остались вопросы, задайте их в чате на сайте или свяжитесь с командой Elite.", ph: "Ваш вопрос…", send: "Отправить" },
-  en: { wake: "Connecting…", think: "Thinking…", speak: "Assistant speaking…", listen: "Listening, go ahead.", type: "Your browser cannot recognise speech. Type a question, the answer will be spoken.", end: "Call ended.", limit: "The call reached 10 minutes and has ended.", err: "Connection error: ", mic: "No microphone access. Allow it in browser settings.", you: "You", ai: "Elite AI", lim: "Demo limit reached: 3 voice conversations per device per day. Ask your question in the text chat on this page or reach the team in the “Team contacts” section.", left: "Time left", bye: "Our demo conversation time is up. Thank you for talking with me! If you have more questions, ask them in the chat on the site or contact the Elite team.", ph: "Your question…", send: "Send" }
+  ru: { wake: "Подключаюсь…", think: "Думаю…", speak: "Говорит ассистент…", listen: "Слушаю, говорите.", type: "Ваш браузер не распознаёт речь. Напишите вопрос, ответ прозвучит голосом.", end: "Разговор завершён.", limit: "Разговор длился 10 минут и завершён.", err: "Ошибка связи: ", mic: "Нет доступа к микрофону. Разрешите его в настройках браузера.", you: "Вы", ai: "АРС-ЭЛИТ", lim: "Лимит демо исчерпан: с одного устройства доступно 3 голосовых разговора в сутки. Задайте вопрос в текстовом чате на странице или свяжитесь с командой в разделе «Контакты команды».", left: "До конца разговора", bye: "Время демо разговора подошло к концу. Спасибо, что поговорили со мной! Если остались вопросы, задайте их в чате на сайте или свяжитесь с командой АРС-ЭЛИТ.", ph: "Ваш вопрос…", send: "Отправить" },
+  en: { wake: "Connecting…", think: "Thinking…", speak: "Assistant speaking…", listen: "Listening, go ahead.", type: "Your browser cannot recognise speech. Type a question, the answer will be spoken.", end: "Call ended.", limit: "The call reached 10 minutes and has ended.", err: "Connection error: ", mic: "No microphone access. Allow it in browser settings.", you: "You", ai: "ARS-ELITE", lim: "Demo limit reached: 3 voice conversations per device per day. Ask your question in the text chat on this page or reach the team in the “Team contacts” section.", left: "Time left", bye: "Our demo conversation time is up. Thank you for talking with me! If you have more questions, ask them in the chat on the site or contact the ARS-ELITE team.", ph: "Your question…", send: "Send" }
 };
 const GREET = {
-  ru: "Здравствуйте, я Elite AI, персональный интеллектуальный ассистент премиум класса. Платформу создаёт компания Elite, её основатели Мариус и Арсен, юридическое лицо находится в Эмиратах. Сейчас вы говорите с демо версией, запуск запланирован на ноябрь. Что вам интересно узнать?",
-  en: "Hello, I am Elite AI, a premium class personal intelligent assistant. The platform is being built by Elite, founded by Marius and Arsen, with its legal entity in the UAE. You are talking to a demo version, and launch is planned for November. What would you like to know?"
+  ru: "Здравствуйте, я ассистент АРС-ЭЛИТ, персональный интеллектуальный ассистент премиум класса. Платформу создаёт компания Elite Icon FZ-LLC, её основатели Мариус и Арсен, юридическое лицо находится в Эмиратах. Сейчас вы говорите с демо версией, запуск запланирован на ноябрь. Что вам интересно узнать?",
+  en: "Hello, I am the ARS Elite assistant, a premium class personal intelligent assistant. The platform is being built by Elite Icon FZ-LLC, founded by Marius and Arsen, with its legal entity in the UAE. You are talking to a demo version, and launch is planned for November. What would you like to know?"
 };
 const t = k => TX[LG()][k];
 let active = false, speaking = false, busy = false, rec = null, hist = [], timer = null;
@@ -150,7 +150,7 @@ function playPcm(b64s) {
 }
 function bargeIn() { gSources.forEach(s => { try { s.stop(); } catch {} }); gSources = []; gNext = 0; }
 function gcfg(l) {
-  return { type: "session.update", session: { voice: gVoice[l], instructions: gInstr[l], turn_detection: { type: "server_vad" },
+  return { type: "session.update", session: { voice: gVoice[l], instructions: gInstr[l], replace: { "ARS-ELITE": "ARS Elite", "АРС-ЭЛИТ": "АРС-ЭЛИТ" }, turn_detection: { type: "server_vad" },
     audio: { input: { format: { type: "audio/pcm", rate: G_RATE }, transcription: { language_hint: l } }, output: { format: { type: "audio/pcm", rate: G_RATE } } } } };
 }
 function grokLang() { if (gws && gws.readyState === 1 && gInstr) gws.send(JSON.stringify(gcfg(LG()))); }
