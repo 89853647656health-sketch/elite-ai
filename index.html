@@ -75,7 +75,7 @@ body.light .box input{background:#fff}body.light audio{filter:none}body.light .b
 <button class="btn" id="go" disabled data-ru="Начать разговор" data-en="Start talking"></button><button class="btn" id="end" disabled data-ru="Завершить" data-en="Hang up"></button><button class="btn" id="cl" data-ru="Закрыть" data-en="Close"></button></div></div>
 <script>window.ELITE_GATEWAY_URL="https://elite-gateway.onrender.com"</script><script>fetch(window.ELITE_GATEWAY_URL+"/health").catch(()=>{})/*wake*/</script><script src="voice.js"></script>
 <script>
-let L='ru';const T=()=>{document.querySelectorAll('[data-ru]').forEach(e=>e.innerHTML=e.dataset[L]);lg.textContent=L=='ru'?'EN':'RU';document.documentElement.lang=L};
+let L='ru';const T=()=>{document.querySelectorAll('[data-ru]').forEach(e=>e.innerHTML=e.dataset[L]);lg.textContent=L=='ru'?'EN':'RU';document.documentElement.lang=L;window.eliteLang&&window.eliteLang(L)};
 lg.onclick=()=>{L=L=='ru'?'en':'ru';T()};T();
 for(let i=0;i<48;i++){const b=document.createElement('i');b.style.animationDelay=(Math.sin(i*.7)*.6+.6).toFixed(2)+'s';wv.appendChild(b)}
 document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{pl.src=b.dataset.a;pl.play()});
