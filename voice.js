@@ -4,8 +4,8 @@ const $ = id => document.getElementById(id);
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 const LG = () => document.documentElement.lang === "en" ? "en" : "ru";
 const TX = {
-  ru: { wake: "Подключаюсь…", think: "Думаю…", speak: "Говорит ассистент…", listen: "Слушаю, говорите.", type: "Ваш браузер не распознаёт речь. Напишите вопрос, ответ прозвучит голосом.", end: "Разговор завершён.", limit: "Разговор длился 10 минут и завершён.", err: "Ошибка связи: ", mic: "Нет доступа к микрофону. Разрешите его в настройках браузера.", you: "Вы", ai: "Elite AI", lim: "Лимит демо исчерпан: с одного устройства доступно 3 голосовых разговора в сутки. Задайте вопрос в текстовом чате на странице или свяжитесь с командой Elite.", left: "До конца разговора", bye: "Время демо разговора подошло к концу. Спасибо, что поговорили со мной! Если остались вопросы, задайте их в чате на сайте или свяжитесь с командой Elite.", ph: "Ваш вопрос…", send: "Отправить" },
-  en: { wake: "Connecting…", think: "Thinking…", speak: "Assistant speaking…", listen: "Listening, go ahead.", type: "Your browser cannot recognise speech. Type a question, the answer will be spoken.", end: "Call ended.", limit: "The call reached 10 minutes and has ended.", err: "Connection error: ", mic: "No microphone access. Allow it in browser settings.", you: "You", ai: "Elite AI", lim: "Demo limit reached: 3 voice conversations per device per day. Ask your question in the text chat on this page or contact the Elite team.", left: "Time left", bye: "Our demo conversation time is up. Thank you for talking with me! If you have more questions, ask them in the chat on the site or contact the Elite team.", ph: "Your question…", send: "Send" }
+  ru: { wake: "Подключаюсь…", think: "Думаю…", speak: "Говорит ассистент…", listen: "Слушаю, говорите.", type: "Ваш браузер не распознаёт речь. Напишите вопрос, ответ прозвучит голосом.", end: "Разговор завершён.", limit: "Разговор длился 10 минут и завершён.", err: "Ошибка связи: ", mic: "Нет доступа к микрофону. Разрешите его в настройках браузера.", you: "Вы", ai: "Elite AI", lim: "Лимит демо исчерпан: с одного устройства доступно 3 голосовых разговора в сутки. Задайте вопрос в текстовом чате на странице или свяжитесь с командой в разделе «Контакты команды».", left: "До конца разговора", bye: "Время демо разговора подошло к концу. Спасибо, что поговорили со мной! Если остались вопросы, задайте их в чате на сайте или свяжитесь с командой Elite.", ph: "Ваш вопрос…", send: "Отправить" },
+  en: { wake: "Connecting…", think: "Thinking…", speak: "Assistant speaking…", listen: "Listening, go ahead.", type: "Your browser cannot recognise speech. Type a question, the answer will be spoken.", end: "Call ended.", limit: "The call reached 10 minutes and has ended.", err: "Connection error: ", mic: "No microphone access. Allow it in browser settings.", you: "You", ai: "Elite AI", lim: "Demo limit reached: 3 voice conversations per device per day. Ask your question in the text chat on this page or reach the team in the “Team contacts” section.", left: "Time left", bye: "Our demo conversation time is up. Thank you for talking with me! If you have more questions, ask them in the chat on the site or contact the Elite team.", ph: "Your question…", send: "Send" }
 };
 const GREET = {
   ru: "Здравствуйте, я Elite AI, персональный интеллектуальный ассистент премиум класса. Платформу создаёт компания Elite, её основатели Мариус и Арсен, юридическое лицо находится в Эмиратах. Сейчас вы говорите с демо версией, запуск запланирован на ноябрь. Что вам интересно узнать?",
@@ -110,7 +110,8 @@ const G_RATE = 24000, G_MAX = 300, G_PER_DAY = 3;
 let gCd = null, gEnd = 0;
 const cd = document.createElement("div"); cd.id = "cd"; cd.style.cssText = "font:700 22px Manrope,sans-serif;margin:6px 0;color:var(--acc,#1d5bff)"; $("st").before(cd);
 const callsLog = () => { try { return JSON.parse(localStorage.getItem("elite-calls") || "[]").filter(x => Date.now() - x < 864e5); } catch { return []; } };
-const limitHit = () => { stopCd(); grokStop(); active = false; $("end").disabled = true; say(t("lim")); };
+const limitHit = () => { stopCd(); grokStop(); active = false; $("end").disabled = true; showLim(); };
+function showLim() { say(t("lim")); const a = document.createElement("a"); a.href = "#contacts"; a.className = "btn primary"; a.style.cssText = "padding:10px 16px;font-size:14px;margin-top:8px"; a.textContent = LG() === "en" ? "Team contacts ↓" : "Контакты команды ↓"; a.onclick = () => $("md").classList.remove("on"); cd.innerHTML = ""; cd.append(a); }
 function stopCd() { clearInterval(gCd); gCd = null; cd.textContent = ""; }
 function startCd() {
   gEnd = Date.now() + G_MAX * 1000; stopCd();
@@ -156,7 +157,7 @@ function grokLang() { if (gws && gws.readyState === 1 && gInstr) gws.send(JSON.s
 async function grokStart() {
   $("md").classList.add("on"); $("q").placeholder = t("ph"); $("qs").textContent = t("send");
   if (active || gOn) return;
-  if (callsLog().length >= G_PER_DAY) { say(t("lim")); return; }
+  if (callsLog().length >= G_PER_DAY) { showLim(); return; }
   // unlock audio inside the click (iOS)
   const AC = window.AudioContext || window.webkitAudioContext;
   try { gctx = new AC(); gctx.resume(); const sb = gctx.createBuffer(1, 1, 22050), s0 = gctx.createBufferSource(); s0.buffer = sb; s0.connect(gctx.destination); s0.start(0); } catch { gctx = null; }
