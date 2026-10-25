@@ -7,6 +7,10 @@ const TX = {
   ru: { wake: "Подключаюсь…", think: "Думаю…", speak: "Говорит ассистент…", listen: "Слушаю, говорите.", type: "Ваш браузер не распознаёт речь. Напишите вопрос, ответ прозвучит голосом.", end: "Разговор завершён.", limit: "Разговор длился 10 минут и завершён.", err: "Ошибка связи: ", mic: "Нет доступа к микрофону. Разрешите его в настройках браузера.", you: "Вы", ai: "Elite AI", ph: "Ваш вопрос…", send: "Отправить" },
   en: { wake: "Connecting…", think: "Thinking…", speak: "Assistant speaking…", listen: "Listening, go ahead.", type: "Your browser cannot recognise speech. Type a question, the answer will be spoken.", end: "Call ended.", limit: "The call reached 10 minutes and has ended.", err: "Connection error: ", mic: "No microphone access. Allow it in browser settings.", you: "You", ai: "Elite AI", ph: "Your question…", send: "Send" }
 };
+const GREET = {
+  ru: "Здравствуйте, я Elite AI, персональный интеллектуальный ассистент премиум класса. Платформу создаёт компания Elite, её основатели Мариус и Арсен, юридическое лицо находится в Эмиратах. Сейчас вы говорите с демо версией, запуск запланирован на ноябрь. Что вам интересно узнать?",
+  en: "Hello, I am Elite AI, a premium class personal intelligent assistant. The platform is being built by Elite, founded by Marius and Arsen, with its legal entity in the UAE. You are talking to a demo version, and launch is planned for November. What would you like to know?"
+};
 const t = k => TX[LG()][k];
 let active = false, speaking = false, busy = false, rec = null, hist = [], timer = null;
 document.querySelectorAll("#md .box > p.m").forEach(p => p.remove());
@@ -63,8 +67,9 @@ function start() {
   if (active) return; active = true; hist = []; log.innerHTML = ""; $("end").disabled = false; say(t("wake"));
   speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance("")); // unlock audio on user gesture
   timer = setTimeout(() => { hang(); say(t("limit")); }, 10 * 60e3);
-  ask(null);
+  greet();
 }
+async function greet() { const g = GREET[LG()]; hist.push({ role: "assistant", content: g }); line("ai", g); await speak(g); listen(); }
 function hang() { active = false; busy = false; speaking = false; clearTimeout(timer); stopRec(); speechSynthesis.cancel(); $("end").disabled = true; say(t("end")); }
 $("call").onclick = $("call2").onclick = start;
 $("off").onclick = () => { hang(); $("md").classList.remove("on"); };
